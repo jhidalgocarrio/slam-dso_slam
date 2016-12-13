@@ -1,0 +1,81 @@
+name "dso_slam"
+# Optionally declare the version number
+# version "0.1"
+
+# If new data types need to be defined, they have to be put in a separate C++
+# header, and this header will be loaded here
+import_types_from "std"
+import_types_from "base"
+import_types_from "frame_helper/Calibration.h"
+import_types_from "frame_helper/FrameHelperTypes.h"
+import_types_from "dso_slamTypes.hpp"
+
+# Finally, it is pretty common that headers are directly loaded from an external
+# library. In this case, the library must be first used (the name is the
+# library's pkg-config name) and then the header can be used. Following Rock
+# conventions, a common use-case would be:
+#
+using_library "dso"
+using_library "frame_helper"
+
+# Declare a new task context (i.e., a component)
+#
+# The corresponding C++ class can be edited in tasks/Task.hpp and
+# tasks/Task.cpp, and will be put in the dso_slam namespace.
+task_context "Task" do
+    # This is the default from now on, and should not be removed. Rock will
+    # transition to a setup where all components use a configuration step.
+    needs_configuration
+
+    #**************************
+    #**** Task Properties *****
+    property("calib_parameters","frame_helper/StereoCalibration").
+        doc 'Intrinsic and extrinsic camera calibration parameters'+
+            'for a full parameter list have a look at frame_helper'
+
+    property("resize_algorithm","/frame_helper/ResizeAlgorithm",:INTER_LINEAR).
+        doc "Resize algorithm which is used to scale the frame before it is written to the output port. "
+            "allowed values are INTER_LINEAR, INTER_NEAREST, INTER_AREA, INTER_CUBIC, INTER_LANCZOS4, BAYER_RESIZE."
+
+    property("vignette_file", "string").
+        doc "The vignette image for photometric calibration."
+
+    #******************************
+    #******* Input ports  *********
+    #******************************
+    input_port('delta_pose_samples', '/base/samples/RigidBodyState').
+        needs_reliable_connection.
+        doc 'Odometry delta pose displacement.'
+
+    input_port("left_frame", ro_ptr('base::samples::frame::Frame')).
+        doc 'Left camera frame.'
+
+    #******************************
+    #******* Transformer  *********
+    #******************************
+    transformer do
+        transform "navigation", "world" # navigation in world in "Source IN target" convention
+        transform "sensor", "body" # sensor in body in "Source IN target" convention
+        align_port("delta_pose_samples", 0)
+        align_port("left_frame", 0.5)
+        max_latency(1.0)
+    end
+
+    #******************************
+    #******* Output ports  ********
+    #******************************
+    output_port('pose_samples_out', '/base/samples/RigidBodyState').
+        doc 'Corrected estimated robot pose from the SLAM.'
+
+    #******************************
+    #******* Debug Ports **********
+    #******************************
+    property('output_debug', 'bool', false).
+        doc 'Set to true if output debug information is desirable.'
+
+    output_port("frame_samples_out",  ro_ptr('base::samples::frame::Frame')).
+        doc 'Image frame with correspondences tracked features.'
+
+
+end
+

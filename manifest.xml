@@ -1,0 +1,12 @@
+<package>
+  <description brief="Direct Sparse Odometry SLAM">
+  Simultaneous Localization and Mapping using DSO
+  </description>
+  <author>Javier Hidalgo-Carrio/javier.hidalgo_carrio@dfki.de</author>
+  <license>GPLv3.0</license>
+  <depend package="base/cmake" />
+  <depend package="base/orogen/types" />
+  <depend package="drivers/orogen/transformer" />
+  <depend package="perception/frame_helper" />
+  <depend package="slam/dso" />
+</package>
