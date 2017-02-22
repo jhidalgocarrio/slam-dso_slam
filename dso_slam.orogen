@@ -6,8 +6,8 @@ name "dso_slam"
 # header, and this header will be loaded here
 import_types_from "std"
 import_types_from "base"
-import_types_from "frame_helper/Calibration.h"
-import_types_from "frame_helper/FrameHelperTypes.h"
+import_types_from "frame_helper/Calibration.h" # Calibration parameters
+import_types_from "frame_helper/FrameHelperTypes.h" # resize_algorithm
 import_types_from "dso_slamTypes.hpp"
 
 # Finally, it is pretty common that headers are directly loaded from an external
@@ -29,9 +29,8 @@ task_context "Task" do
 
     #**************************
     #**** Task Properties *****
-    property("calib_parameters","frame_helper/StereoCalibration").
-        doc 'Intrinsic and extrinsic camera calibration parameters'+
-            'for a full parameter list have a look at frame_helper'
+    property("calib_parameters","frame_helper/CameraCalibration").
+        doc 'Intrinsic camera calibration parameters for a full parameter list have a look at frame_helper'
 
     property("resize_algorithm","/frame_helper/ResizeAlgorithm",:INTER_LINEAR).
         doc "Resize algorithm which is used to scale the frame before it is written to the output port. "
